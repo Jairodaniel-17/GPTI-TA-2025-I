@@ -52,29 +52,32 @@ El siguiente diagrama describe la **arquitectura Cliente-Servidor Monolítica** 
 
 ```mermaid
 graph TD
-    subgraph Cliente
-        A[Navegador Web]
-    end
+  %% Cliente
+  subgraph CLIENTE
+    A[Navegador Web]
+  end
 
-    subgraph Servidor
-        B[Flask App (app.py)]
-        C[Controladores (Rutas)]
-        D[Modelos (SQLAlchemy)]
-        E[Base de Datos SQLite/PostgreSQL]
-        F[Vistas (Jinja2 + Tailwind + Bootstrap)]
-        G[Gestor de Evidencias (Uploads)]
-    end
+  %% Servidor
+  subgraph SERVIDOR
+    B[Flask App *app.py*]
+    C[Controladores *Rutas*]
+    D[Modelos *SQLAlchemy*]
+    E[Base de Datos *SQLite/PostgreSQL*]
+    F[Vistas *Jinja2 + Tailwind + Bootstrap*]
+    G[Gestor de Evidencias *Uploads*]
+  end
 
-    A -->|HTTP Request| B
-    B --> C
-    C --> D
-    C --> E
-    C --> F
-    C --> G
-    G --> E
-    E -->|Consulta| D
-    F -->|Render HTML| A
-````
+  A -->|HTTP Request| B
+  B --> C
+  C --> D
+  C --> E
+  C --> F
+  C --> G
+  G --> E
+  E --> D
+  F -->|Render HTML| A
+
+```
 
 ---
 
