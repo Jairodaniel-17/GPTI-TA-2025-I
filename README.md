@@ -102,8 +102,8 @@ pmbook_tracker/
 
 ```mermaid
 erDiagram
-    USER ||--o{ PROJECT : manages
-    PROJECT ||--|{ TASK : includes
+    USER ||--o{ PROJECT : has
+    PROJECT ||--o{ TASK : has
 
     USER {
         int id PK
@@ -114,9 +114,9 @@ erDiagram
     PROJECT {
         int id PK
         string name
-        string description
-        date start_date
-        date end_date
+        text description
+        datetime start_date
+        datetime end_date
         int user_id FK
     }
 
@@ -127,9 +127,10 @@ erDiagram
         string knowledge_area
         string status
         string evidence_file
-        date completion_date
+        datetime completion_date
         int project_id FK
     }
+
 ```
 
 ---
