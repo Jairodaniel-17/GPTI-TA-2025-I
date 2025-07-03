@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">{{ project.name }}</h1>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver a Proyectos</a>
+        </div>
+        <p class="text-gray-600 mt-2">{{ project.description }}</p>
+        <div class="mt-4">
+            <strong>Progreso General:</strong>
+            <div class="progress mt-2">
+                <div class="progress-bar" role="progressbar" style="width: {{ project.progress }}%"
+                    aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ project.progress }}%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            {% for group in ["Inicio", "Planificación", "Ejecución", "Monitoreo", "Cierre"] %}
+            <button type="button" class="btn btn-outline-primary filter-btn" data-group="{{ group }}">
+                {{ group }}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="table table-striped">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th>Proceso</th>
+                    <th>Grupo</th>
+                    <th>Área</th>
+                    <th>Estado</th>
+                    <th>Evidencia</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in project.tasks %}
+                <tr class="task-row" data-group="{{ task.process_group }}">
+                    <td>{{ task.process_name }}</td>
+                    <td>{{ task.process_group }}</td>
+                    <td>{{ task.knowledge_area }}</td>
+                    <td>
+                        <span
+                            class="badge {% if task.status == 'Terminado' %}bg-success{% elif task.status == 'En Proceso' %}bg-warning{% else %}bg-secondary{% endif %}">
+                            {{ task.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if task.evidence_file %}
+                        <a href="{{ url_for('download_file', filename=task.evidence_file) }}"
+                            class="btn btn-sm btn-link">
+                            Descargar
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Sin evidencia</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#taskModal{{ task.id }}">
+                            Actualizar
+                        </button>
+
+                        <!-- Modal para cada tarea -->
+                        <div class="modal fade" id="taskModal{{ task.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Actualizar Tarea</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST"
+                                        enctype="multipart/form-data">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Estado</label>
+                                                <select name="status" class="form-select" required>
+                                                    <option value="Pendiente" {% if task.status=='Pendiente'
+                                                        %}selected{% endif %}>Pendiente</option>
+                                                    <option value="En Proceso" {% if task.status=='En Proceso'
+                                                        %}selected{% endif %}>En Proceso</option>
+                                                    <option value="Terminado" {% if task.status=='Terminado'
+                                                        %}selected{% endif %}>Terminado</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Evidencia (PDF, DOCX, Imagen)</label>
+                                                <input type="file" name="evidence" class="form-control"
+                                                    accept=".pdf,.docx,.jpg,.jpeg,.png">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Guardar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const taskRows = document.querySelectorAll('.task-row');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const group = this.dataset.group;
+
+                // Toggle active state of buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Filter rows
+                taskRows.forEach(row => {
+                    if (group === 'all' || row.dataset.group === group) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

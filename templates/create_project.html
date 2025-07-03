@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Crear Nuevo Proyecto</h2>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver</a>
+    </div>
+
+    <form method="POST" action="{{ url_for('create_project') }}">
+        <div class="mb-4">
+            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nombre del Proyecto</label>
+            <input type="text" id="name" name="name" required class="form-control"
+                placeholder="Ingresa el nombre del proyecto">
+        </div>
+
+        <div class="mb-4">
+            <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Descripción</label>
+            <textarea id="description" name="description" rows="4" class="form-control"
+                placeholder="Describe el proyecto"></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label for="start_date" class="block text-gray-700 text-sm font-bold mb-2">Fecha de Inicio</label>
+            <input type="date" id="start_date" name="start_date" required class="form-control">
+        </div>
+
+        <div class="mb-6">
+            <label for="end_date" class="block text-gray-700 text-sm font-bold mb-2">Fecha de Fin (Opcional)</label>
+            <input type="date" id="end_date" name="end_date" class="form-control">
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" class="btn btn-primary">
+                Crear Proyecto
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
