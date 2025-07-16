@@ -1,142 +1,226 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow-md p-6">
-    <div class="mb-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">{{ project.name }}</h1>
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver a Proyectos</a>
-        </div>
-        <p class="text-gray-600 mt-2">{{ project.description }}</p>
-        <div class="mt-4">
-            <strong>Progreso General:</strong>
-            <div class="progress mt-2">
-                <div class="progress-bar" role="progressbar" style="width: {{ project.progress }}%"
-                    aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">
-                    {{ project.progress }}%
-                </div>
-            </div>
-        </div>
+<div class="bg-fondoSec rounded-lg shadow-sm p-8" x-data="{ modalTaskId: null }">
+  <!-- Encabezado del proyecto -->
+  <div class="mb-6">
+    <div class="flex justify-between items-center flex-wrap gap-4">
+      <h1 class="text-2xl font-bold text-texto">{{ project.name }}</h1>
+      <a href="{{ url_for('index') }}" class="inline-block border border-gris text-texto px-4 py-2 rounded-full hover:bg-fondo">
+        Volver a Proyectos
+      </a>
     </div>
+    <p class="text-textoSec mt-2">{{ project.description }}</p>
 
-    <div class="mb-4">
-        <div class="btn-group" role="group">
-            {% for group in ["Inicio", "Planificación", "Ejecución", "Monitoreo", "Cierre"] %}
-            <button type="button" class="btn btn-outline-primary filter-btn" data-group="{{ group }}">
-                {{ group }}
+    <!-- Barra de progreso -->
+    <div class="mt-4">
+      <strong class="text-texto">Progreso General:</strong>
+      <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
+        <div class="bg-verde h-4 rounded-full text-xs text-white text-center" style="width: {{ project.progress }}%">
+          {{ project.progress }}%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros de grupo con botón "Todo" -->
+  <div class="mb-6 flex flex-wrap gap-2">
+    <button type="button"
+      class="filter-btn px-4 py-2 border border-gris text-texto rounded-full hover:bg-fondo"
+      :class="{ 'bg-verde text-white': activeFilter === 'all' }"
+      x-data="{ activeFilter: 'all' }"
+      data-group="all">
+      Todo
+    </button>
+    {% for group in ["Inicio", "Planificación", "Ejecución", "Monitoreo", "Cierre"] %}
+    <button type="button"
+      class="filter-btn px-4 py-2 border border-gris text-texto rounded-full hover:bg-fondo"
+      :class="{ 'bg-verde text-white': activeFilter === '{{ group }}' }"
+      data-group="{{ group }}">
+      {{ group }}
+    </button>
+    {% endfor %}
+  </div>
+
+  <!-- Tabla de tareas -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-fondoSec border border-gray-200">
+      <thead>
+        <tr class="bg-fondo">
+          <th class="px-4 py-2 text-left text-textoSec">Proceso</th>
+          <th class="px-4 py-2 text-left text-textoSec">Grupo</th>
+          <th class="px-4 py-2 text-left text-textoSec">Área</th>
+          <th class="px-4 py-2 text-left text-textoSec">Estado</th>
+          <th class="px-4 py-2 text-left text-textoSec">Evidencia</th>
+          <th class="px-4 py-2 text-left text-textoSec">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in project.tasks %}
+        <tr class="border-t border-gray-200 task-row" data-group="{{ task.process_group }}">
+          <td class="px-4 py-2">{{ task.process_name }}</td>
+          <td class="px-4 py-2">{{ task.process_group }}</td>
+          <td class="px-4 py-2">{{ task.knowledge_area }}</td>
+          <td class="px-4 py-2">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
+              {% if task.status == 'Terminado' %}bg-verde text-white
+              {% elif task.status == 'En Proceso' %}bg-yellow-400 text-texto
+              {% else %}bg-gris text-white{% endif %}">
+              {{ task.status }}
+            </span>
+          </td>
+          <td class="px-4 py-2">
+            {% if task.evidence_file %}
+            <a href="{{ url_for('download_file', filename=task.evidence_file) }}"
+            class="text-verde font-semibold hover:underline text-sm"
+            target="_blank" rel="noopener noreferrer">
+            Descargar
+          </a>
+
+            {% else %}
+            <span class="text-textoSec text-sm">Sin evidencia</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-2">
+            <!-- Botón que abre el modal -->
+            <button type="button"
+              @click="modalTaskId = {{ task.id }}"
+              class="bg-verde text-white px-3 py-1 rounded-full text-sm hover:opacity-90">
+              Actualizar
             </button>
-            {% endfor %}
-        </div>
-    </div>
 
-    <div class="overflow-x-auto">
-        <table class="table table-striped">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th>Proceso</th>
-                    <th>Grupo</th>
-                    <th>Área</th>
-                    <th>Estado</th>
-                    <th>Evidencia</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for task in project.tasks %}
-                <tr class="task-row" data-group="{{ task.process_group }}">
-                    <td>{{ task.process_name }}</td>
-                    <td>{{ task.process_group }}</td>
-                    <td>{{ task.knowledge_area }}</td>
-                    <td>
-                        <span
-                            class="badge {% if task.status == 'Terminado' %}bg-success{% elif task.status == 'En Proceso' %}bg-warning{% else %}bg-secondary{% endif %}">
-                            {{ task.status }}
+            <!-- Modal Tailwind + Alpine -->
+            <div
+              x-show="modalTaskId === {{ task.id }}"
+              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              style="display: none;">
+              <div class="bg-fondoSec rounded-lg w-full max-w-md p-6">
+                <h2 class="text-xl font-bold mb-4 text-texto">Actualizar Tarea</h2>
+                <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST" enctype="multipart/form-data">
+                  
+                  <!-- Campo de Estado mejorado -->
+                  <div class="mb-4">
+                    <label class="block mb-2 text-textoSec font-medium">Estado</label>
+                    <div class="relative">
+                      <select name="status" required 
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-texto
+                               focus:outline-none focus:ring-2 focus:ring-verde focus:border-verde
+                               appearance-none cursor-pointer transition-all duration-200
+                               hover:border-gray-400">
+                        <option value="Pendiente" {% if task.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="En Proceso" {% if task.status == 'En Proceso' %}selected{% endif %}>En Proceso</option>
+                        <option value="Terminado" {% if task.status == 'Terminado' %}selected{% endif %}>Terminado</option>
+                      </select>
+                      <!-- Ícono de flecha personalizado -->
+                      <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Campo de archivo mejorado -->
+                  <div class="mb-6">
+                    <label class="block mb-2 text-textoSec font-medium">Evidencia (PDF, DOCX, Imagen)</label>
+                    <div class="relative">
+                      <input type="file" name="evidence" accept=".pdf,.docx,.jpg,.jpeg,.png"
+                        id="file-input-{{ task.id }}"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                        onchange="updateFileName(this, {{ task.id }})" />
+                      
+                      <!-- Botón estilizado -->
+                      <div class="flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-3 
+                                  hover:border-gray-400 transition-colors duration-200 cursor-pointer">
+                        <span id="file-name-{{ task.id }}" class="text-gray-500 text-sm">
+                          Seleccionar archivo
                         </span>
-                    </td>
-                    <td>
-                        {% if task.evidence_file %}
-                        <a href="{{ url_for('download_file', filename=task.evidence_file) }}"
-                            class="btn btn-sm btn-link">
-                            Descargar
-                        </a>
-                        {% else %}
-                        <span class="text-muted">Sin evidencia</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#taskModal{{ task.id }}">
-                            Actualizar
-                        </button>
-
-                        <!-- Modal para cada tarea -->
-                        <div class="modal fade" id="taskModal{{ task.id }}" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Actualizar Tarea</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST"
-                                        enctype="multipart/form-data">
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label class="form-label">Estado</label>
-                                                <select name="status" class="form-select" required>
-                                                    <option value="Pendiente" {% if task.status=='Pendiente'
-                                                        %}selected{% endif %}>Pendiente</option>
-                                                    <option value="En Proceso" {% if task.status=='En Proceso'
-                                                        %}selected{% endif %}>En Proceso</option>
-                                                    <option value="Terminado" {% if task.status=='Terminado'
-                                                        %}selected{% endif %}>Terminado</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Evidencia (PDF, DOCX, Imagen)</label>
-                                                <input type="file" name="evidence" class="form-control"
-                                                    accept=".pdf,.docx,.jpg,.jpeg,.png">
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Cancelar</button>
-                                            <button type="submit" class="btn btn-primary">Guardar</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
+                        <div class="flex items-center gap-2">
+                          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                          </svg>
+                          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                            Buscar
+                          </span>
                         </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Botones de acción -->
+                  <div class="flex justify-end gap-3">
+                    <button type="button" @click="modalTaskId = null"
+                      class="border border-gris text-texto px-5 py-2 rounded-lg hover:bg-fondo
+                             transition-colors duration-200 font-medium">
+                      Cancelar
+                    </button>
+                    <button type="submit"
+                      class="bg-verde text-white px-5 py-2 rounded-lg hover:opacity-90
+                             transition-opacity duration-200 font-medium">
+                      Guardar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <!-- Fin Modal -->
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
+<!-- Alpine.js -->
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<!-- JavaScript para el nombre del archivo -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        const taskRows = document.querySelectorAll('.task-row');
+  function updateFileName(input, taskId) {
+    const fileName = input.files[0] ? input.files[0].name : 'Seleccionar archivo';
+    document.getElementById(`file-name-${taskId}`).textContent = fileName;
+    
+    // Cambiar el color del texto cuando se selecciona un archivo
+    const fileNameElement = document.getElementById(`file-name-${taskId}`);
+    if (input.files[0]) {
+      fileNameElement.classList.remove('text-gray-500');
+      fileNameElement.classList.add('text-texto');
+    } else {
+      fileNameElement.classList.remove('text-texto');
+      fileNameElement.classList.add('text-gray-500');
+    }
+  }
+</script>
 
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const group = this.dataset.group;
+<!-- Filtros JS -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const taskRows = document.querySelectorAll('.task-row');
 
-                // Toggle active state of buttons
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const group = this.dataset.group;
 
-                // Filter rows
-                taskRows.forEach(row => {
-                    if (group === 'all' || row.dataset.group === group) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
+        filterButtons.forEach(btn => {
+          btn.classList.remove('bg-verde', 'text-white');
         });
+        this.classList.add('bg-verde', 'text-white');
+
+        taskRows.forEach(row => {
+          if (group === 'all' || row.dataset.group === group) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
     });
+
+    // Activa "Todo" por defecto
+    filterButtons[0].classList.add('bg-verde', 'text-white');
+  });
 </script>
 {% endblock %}

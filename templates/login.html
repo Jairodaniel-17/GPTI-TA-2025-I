@@ -1,35 +1,48 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Iniciar Sesión</h2>
+<div class="max-w-md mx-auto bg-fondoSec rounded-lg shadow-sm p-8">
+  <h2 class="text-2xl font-bold text-texto mb-6 text-center">Iniciar Sesión</h2>
 
-    <form method="POST" action="{{ url_for('login') }}">
-        <div class="mb-4">
-            <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Usuario</label>
-            <input type="text" id="username" name="username" required class="form-control"
-                placeholder="Ingresa tu nombre de usuario">
-        </div>
-
-        <div class="mb-6">
-            <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
-            <input type="password" id="password" name="password" required class="form-control"
-                placeholder="Ingresa tu contraseña">
-        </div>
-
-        <div class="flex items-center justify-between">
-            <button type="submit" class="btn btn-primary w-full">
-                Iniciar Sesión
-            </button>
-        </div>
-    </form>
-
-    <div class="mt-4 text-center">
-        <p class="text-gray-600">¿No tienes una cuenta?
-            <a href="{{ url_for('register') }}" class="text-blue-500 hover:text-blue-700">
-                Regístrate
-            </a>
-        </p>
+  <form method="POST" action="{{ url_for('login') }}">
+    <div class="mb-4">
+      <label for="username" class="block text-textoSec text-sm font-semibold mb-2">Usuario</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        required
+        placeholder="Ingresa tu nombre de usuario"
+        class="w-full px-4 py-3 rounded-md bg-fondoSec border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-verde"
+      >
     </div>
+
+    <div class="mb-6">
+      <label for="password" class="block text-textoSec text-sm font-semibold mb-2">Contraseña</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        required
+        placeholder="Ingresa tu contraseña"
+        class="w-full px-4 py-3 rounded-md bg-fondoSec border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-verde"
+      >
+    </div>
+
+    <button
+      type="submit"
+      class="w-full bg-verde text-white py-3 rounded-full font-semibold hover:opacity-90 transition"
+    >
+      Iniciar Sesión
+    </button>
+  </form>
+
+  <div class="mt-6 text-center">
+    <p class="text-textoSec">¿No tienes una cuenta?
+      <a href="{{ url_for('register') }}" class="text-verde font-semibold hover:underline">
+        Regístrate
+      </a>
+    </p>
+  </div>
 </div>
 {% endblock %}

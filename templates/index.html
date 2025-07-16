@@ -4,42 +4,61 @@
 <div class="bg-white rounded-lg shadow-md p-6 mb-6">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Proyectos PMBOK</h1>
-        <a href="{{ url_for('create_project') }}" class="btn btn-primary">Nuevo Proyecto</a>
+        <a href="{{ url_for('create_project') }}" class="inline-block border border-gris text-texto px-4 py-2 rounded-full hover:bg-fondo">Nuevo Proyecto</a>
     </div>
 
     {% if projects %}
     <div class="overflow-x-auto">
-        <table class="table table-striped">
+        <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Descripción</th>
-                    <th scope="col">Fecha Inicio</th>
-                    <th scope="col">Fecha Fin</th>
-                    <th scope="col">Progreso</th>
-                    <th scope="col">Acciones</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progreso</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="bg-white divide-y divide-gray-200">
                 {% for project in projects %}
-                <tr>
-                    <td>{{ project.name }}</td>
-                    <td>{{ project.description[:100] }}...</td>
-                    <td>{{ project.start_date.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ project.end_date.strftime('%d/%m/%Y') if project.end_date else 'No definida' }}</td>
-                    <td>
-                        <div class="progress">
-                            <div class="progress-bar" role="progressbar" style="width: {{ project.progress }}%"
-                                aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">
+                <tr x-data="{ open: false }">
+                    <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-800">{{ project.name }}</td>
+                    <td class="px-6 py-4 align-top max-w-[350px] break-words">
+                    <template x-if="!open">
+                        <span>
+                        {{ project.description[:60] }}...
+                        <button @click="open = true" class="text-blue-600 underline ml-2">Ver más</button>
+                        </span>
+                    </template>
+                    <template x-if="open">
+                        <span>
+                        {{ project.description }}
+                        <button @click="open = false" class="text-blue-600 underline ml-2">Ocultar</button>
+                        </span>
+                    </template>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ project.start_date.strftime('%d/%m/%Y') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {{ project.end_date.strftime('%d/%m/%Y') if project.end_date else 'No definida' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="bg-green-500 h-4 rounded-full text-xs text-white text-center"
+                                 style="width: {{ project.progress }}%">
                                 {{ project.progress }}%
                             </div>
                         </div>
                     </td>
-                    <td>
-                        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-sm btn-info">Ver
-                            Detalle</a>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                    <a href="{{ url_for('project_detail', project_id=project.id) }}"
+                        class="inline-block border border-gris text-texto px-4 py-2 rounded-full hover:bg-fondo text-sm">
+                        Ver Detalle
+                    </a>
                     </td>
+
                 </tr>
+                <!-- Eliminada la fila expandida -->
                 {% endfor %}
             </tbody>
         </table>
@@ -51,4 +70,7 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Incluye Alpine.js si no está cargado -->
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 {% endblock %}
